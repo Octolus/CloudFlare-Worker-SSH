@@ -1,0 +1,3 @@
+# Optional local bearer token for wrangler dev.
+# Requests must include: Authorization: Bearer change-me
+SSH_PROXY_TOKEN=change-me

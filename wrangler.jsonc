@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // Cloudflare Worker configuration.
+  //
+  // `nodejs_compat` enables the Node APIs and polyfills that `ssh2` needs
+  // (`crypto`, `stream`, `buffer`, and friends). Per current Cloudflare docs,
+  // a compatibility date of 2024-09-23 or later enables the v2 compatibility
+  // set; this project uses today's date so local and deployed behavior stay
+  // aligned with current Workers runtime semantics.
+  "name": "cloudflare-worker-ssh",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-06",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // `ssh2` references the Node globals `__dirname` / `__filename` at import
+  // time in code paths this Worker does not use: Windows Pageant agent support
+  // and the chacha20-poly1305 wasm loader. Workers do not provide those globals,
+  // so substitute harmless literals during bundling.
+  "define": {
+    "__dirname": "\"/\"",
+    "__filename": "\"/worker.js\""
+  }
+
+  // Optional: require callers to present `Authorization: Bearer <token>`.
+  // Set the real value as a secret instead of committing it:
+  //   wrangler secret put SSH_PROXY_TOKEN
+  //
+  // "vars": {
+  //   "SSH_PROXY_TOKEN": "set-me-with-wrangler-secret"
+  // }
+}

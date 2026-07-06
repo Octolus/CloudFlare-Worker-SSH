@@ -1,0 +1,42 @@
+diff --git a/node_modules/ssh2/lib/protocol/crypto.js b/node_modules/ssh2/lib/protocol/crypto.js
+index 851cc73..91dd557 100644
+--- a/node_modules/ssh2/lib/protocol/crypto.js
++++ b/node_modules/ssh2/lib/protocol/crypto.js
+@@ -1578,21 +1578,22 @@ module.exports = {
+   MAC_INFO,
+   bindingAvailable: !!binding,
+   init: (() => {
+-    // eslint-disable-next-line no-async-promise-executor
+-    return new Promise(async (resolve, reject) => {
+-      try {
+-        POLY1305_WASM_MODULE = await require('./crypto/poly1305.js')();
+-        POLY1305_RESULT_MALLOC = POLY1305_WASM_MODULE._malloc(16);
+-        poly1305_auth = POLY1305_WASM_MODULE.cwrap(
+-          'poly1305_auth',
+-          null,
+-          ['number', 'array', 'number', 'array', 'number', 'array']
+-        );
+-      } catch (ex) {
+-        return reject(ex);
+-      }
+-      resolve();
+-    });
++    // PATCHED FOR CLOUDFLARE WORKERS (see patches/ssh2+*.patch):
++    // Upstream eagerly instantiates a WebAssembly build of poly1305 here, at
++    // module load time. The Workers runtime forbids compiling wasm from raw
++    // bytes ("Wasm code generation disallowed by embedder"), so this promise
++    // rejected and broke every connection before the handshake could start.
++    // poly1305 is only needed for the chacha20-poly1305@openssh.com cipher,
++    // which this project deliberately never negotiates (WORKER_SAFE_ALGORITHMS
++    // pins aes-ctr). We skip the wasm and install a poly1305_auth that throws
++    // only if that cipher is somehow selected anyway.
++    poly1305_auth = () => {
++      throw new Error(
++        'chacha20-poly1305@openssh.com is unavailable on Cloudflare Workers; '
++        + 'use an aes-ctr or aes-gcm cipher instead'
++      );
++    };
++    return Promise.resolve();
+   })(),
+ 
+   NullCipher,

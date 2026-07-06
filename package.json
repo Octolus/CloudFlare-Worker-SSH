@@ -1,0 +1,36 @@
+{
+  "name": "cloudflare-worker-ssh",
+  "version": "0.1.0",
+  "description": "Run SSH commands from a Cloudflare Worker using the raw TCP connect() API and the pure-JS ssh2 client (password auth).",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "ssh",
+    "ssh2",
+    "tcp",
+    "connect"
+  ],
+  "scripts": {
+    "postinstall": "patch-package",
+    "dev": "wrangler dev --local",
+    "deploy": "wrangler deploy",
+    "check": "npm run typecheck && npm test && wrangler deploy --dry-run",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ssh2": "1.17.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "@types/node": "^22.5.0",
+    "@types/ssh2": "^1.15.1",
+    "patch-package": "^8.0.1",
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.107.0"
+  }
+}
